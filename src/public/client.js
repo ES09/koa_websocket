@@ -40,15 +40,28 @@
         inputEl.value = '';
     })
 
-    socket.addEventListener('message', (event) => {
+    const drawChats = () => {
         chatsEl.innerHTML = '';
-
-        chats.push(JSON.parse(event.data));
         chats.forEach(({ message, nickname }) => {
             const chatDiv = document.createElement('div');
             chatDiv.innerHTML = `${nickname} : ${message}`;
-            chatsEl.append(chatDiv);
-        })
+            chatsEl.appendChild(chatDiv);
+        });
+    }
+
+    socket.addEventListener('message', (event) => {
+        const { type, payload } = JSON.parse(event.data);
+
+        if(type == 'sync') {
+            const { chats : syncedChats } = payload;
+            chats.push(...syncedChats); 
+        } else if(type == 'chat') {
+            const chat = payload;
+            chats.push(chat);
+        }
+        
+        drawChats();
+        
     })
     
 })()
